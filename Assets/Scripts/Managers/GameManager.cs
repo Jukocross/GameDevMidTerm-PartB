@@ -16,12 +16,16 @@ public class GameManager : MonoBehaviour
     public GameObject[] m_TankPrefabs;
     public TankManager[] m_Tanks;               
     public List<Transform> wayPointsForAI;
+    //To load the red image sprite
+    public GameObject AlertScreen;
 
     private int m_RoundNumber;                  
     private WaitForSeconds m_StartWait;         
     private WaitForSeconds m_EndWait;           
     private TankManager m_RoundWinner;          
-    private TankManager m_GameWinner;           
+    private TankManager m_GameWinner;
+    //Boolean to prevent spamming of the alerts
+    private bool alerted;           
 
 
     private void Start()
@@ -33,6 +37,28 @@ public class GameManager : MonoBehaviour
         SetCameraTargets();
 
         StartCoroutine(GameLoop());
+    }
+
+    private void Update()
+    {
+        //Check for the input R button to initate a restart on the scene
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+        //Check if the alert screen is set and showing(alerting mode)
+        if(AlertScreen != null)
+        {
+            if(AlertScreen.GetComponent<Image>().color.a>0)
+            {
+                var color = AlertScreen.GetComponent<Image>().color;
+                color.a -= 0.001f;
+                AlertScreen.GetComponent<Image>().color = color;
+            } else
+            {
+                alerted = false;
+            }
+        }
     }
 
 
@@ -188,5 +214,18 @@ public class GameManager : MonoBehaviour
     private void DisableTankControl()
     {
         for (int i = 0; i < m_Tanks.Length; i++) m_Tanks[i].DisableControl();
+    }
+
+    //To cause the apperance of the red images as blinking effect to warn the player.
+    public void Alert()
+    {
+        if (alerted) return;
+        if(AlertScreen != null)
+        {
+            var color = AlertScreen.GetComponent<Image>().color;
+            color.a = 0.6f;
+            AlertScreen.GetComponent<Image>().color = color;
+            alerted = true;
+        }
     }
 }
