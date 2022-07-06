@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class TankShooting : MonoBehaviour
 {
@@ -18,7 +19,9 @@ public class TankShooting : MonoBehaviour
     private float m_CurrentLaunchForce;
     private float m_ChargeSpeed;
     private bool m_Fired;
-    private float nextFireTime;
+    //Variables to set the fireRates
+    private float defaultFireRate = 1.0f;
+    private bool m_recharging;
 
     private void OnEnable()
     {
@@ -41,9 +44,11 @@ public class TankShooting : MonoBehaviour
         if (m_CurrentLaunchForce >= m_MaxLaunchForce && !m_Fired)
         {
             m_CurrentLaunchForce = m_MaxLaunchForce;
-            Fire(m_CurrentLaunchForce, 1);
+            //Change the input into variables instead of an static value
+            Fire(m_CurrentLaunchForce, defaultFireRate);
         }
-        else if (Input.GetButtonDown(m_FireButton))
+        //Doesnt initiate the charging of the shooting while recharging
+        else if (Input.GetButtonDown(m_FireButton) && !m_recharging)
         {
             m_Fired = false;
             m_CurrentLaunchForce = m_MinLaunchForce;
@@ -58,16 +63,20 @@ public class TankShooting : MonoBehaviour
         }
         else if (Input.GetButtonUp(m_FireButton) && !m_Fired)
         {
-            Fire(m_CurrentLaunchForce, 1);
+            //Change the input into variables instead of an static value
+            Fire(m_CurrentLaunchForce, defaultFireRate);
         }
     }
 
 
     public void Fire(float launchForce, float fireRate)
     {
-        if (Time.time <= nextFireTime) return;
+        //Return if recharging
+        if (m_recharging) return;
+        m_recharging = true;
+        //Initiate the interval waiting time as recharging
+        StartCoroutine(recharging(fireRate));
 
-        nextFireTime = Time.time + fireRate;
         m_Fired = true;
 
         Rigidbody shellInstance =
@@ -78,6 +87,18 @@ public class TankShooting : MonoBehaviour
         m_ShootingAudio.Play();
 
         m_CurrentLaunchForce = m_MinLaunchForce;
+    }
+
+    //Provide interval waiting time as the recharging time
+    IEnumerator recharging(float fireRate)
+    {
+        yield return new WaitForSeconds(fireRate);
+        m_recharging = false;
+    }
+    //Public set function for the fireRate
+    public void setFireRate(float firerate)
+    {   
+        defaultFireRate = firerate;
     }
     
 }

@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Serializable]
 public class TankManager
 {
-    
     public Color m_PlayerColor;
     public Transform m_SpawnPoint;
     [HideInInspector] public int m_PlayerNumber;
     [HideInInspector] public string m_ColoredPlayerText;
     [HideInInspector] public GameObject m_Instance;
     [HideInInspector] public int m_Wins;
-
 
     private TankMovement m_Movement;
     private TankShooting m_Shooting;
@@ -70,6 +69,8 @@ public class TankManager
         if (m_StateController != null) m_StateController.enabled = true;
 
         m_Shooting.enabled = true;
+        // Initiate balance on each start of the round to set FireRate
+        balance();
         m_CanvasGameObject.SetActive(true);
     }
 
@@ -81,5 +82,21 @@ public class TankManager
         m_Instance.SetActive(false);
         m_Instance.SetActive(true);
     }
+    
+    //Helper function to set the tank shooting fire rate
+    private void balance()
+    {
+        switch (m_Wins)
+        {
+            case 1:
+                m_Shooting.setFireRate(1.2f);
+                break;
+            case 2: m_Shooting.setFireRate(1.5f); break;
+            case 3: m_Shooting.setFireRate(1.8f); break;
+            case 4: m_Shooting.setFireRate(2f); break;
+            case 5: m_Shooting.setFireRate(2.5f); break;
+            default: m_Shooting.setFireRate(1.0f); break;
+        }
+    }   
 
 }
